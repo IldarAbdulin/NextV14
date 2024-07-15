@@ -1,52 +1,28 @@
 'use client';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Layout from '../components/screens/layout/Layout';
-import { useEffect, useState } from 'react';
-
-interface IAddress {
-  city: string;
-  street: string;
-  zipcode: string;
-}
-
-interface IUser {
-  id?: number;
-  name?: string;
-  username?: string;
-  email?: string;
-  website?: string;
-  phone?: string;
-  address?: IAddress;
-}
+import { useEffect } from 'react';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { getUser } from '@/redux/slices/users-slice/users-slice';
 
 export default function UserPage() {
   const params = useParams();
   const { back } = useRouter();
-  const [user, setUser] = useState<IUser>({});
-  const [loading, setLoading] = useState(true);
-  const getUsers = async () => {
-    setLoading(true);
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/users/${params.slug}`
-    );
-    if (!res.ok) {
-      throw new Error(`Response status: ${res.status}`);
-    }
-    const json = await res.json();
-    setUser(json);
-    setLoading(false);
-  };
+  const { user, error, loading } = useAppSelector(({ user }) => user);
+  const dispatch = useAppDispatch();
+
   const goBack = () => back();
 
   useEffect(() => {
-    getUsers();
-  }, []);
+    dispatch(getUser(params.slug));
+  }, [dispatch]);
 
   return (
     <Layout>
       {loading ? (
         <p>Loading...</p>
-      ) : (
+      ) : user.id ? (
         <>
           <button
             onClick={goBack}
@@ -69,6 +45,16 @@ export default function UserPage() {
               </li>
             </ul>
           </nav>
+        </>
+      ) : (
+        <>
+          <button
+            onClick={goBack}
+            className="border border-black p-2 duration-100 hover:border-blue-400"
+          >
+            Go Back
+          </button>
+          <p className="text-red-500">{error}</p>
         </>
       )}
     </Layout>

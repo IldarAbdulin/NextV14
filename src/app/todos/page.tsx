@@ -2,26 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Layout from '../components/screens/layout/Layout';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { getTodos } from '@/redux/slices/todos-slice/todos-slice';
 
 export default function Todos() {
-  const [todos, setTodos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const getTodos = async () => {
-    setLoading(true);
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/todos?_limit=20`
-    );
-    if (!res.ok) {
-      throw new Error(`Response status: ${res.status}`);
-    }
-    const json = await res.json();
-    setTodos(json);
-    setLoading(false);
-  };
-
+  const { todos, error, loading } = useAppSelector(({ todos }) => todos);
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    getTodos();
-  }, []);
+    dispatch(getTodos());
+  }, [dispatch]);
   return (
     <Layout>
       <section>
@@ -40,7 +30,7 @@ export default function Todos() {
               </div>
             ))
           ) : (
-            <p className="text-red-600">Users not found...</p>
+            <p className="text-red-600">{error}</p>
           )}
         </div>
       </section>

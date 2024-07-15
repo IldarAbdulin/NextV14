@@ -1,29 +1,18 @@
 'use client';
+import { useAppDispatch } from '@/hooks/useAppDispatch';
+import { useAppSelector } from '@/hooks/useAppSelector';
+import { getUsers } from '@/redux/slices/users-slice/users-slice';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function UsersMain() {
-  const [users, setUsers] = useState([]);
+  const { users, error, loading } = useAppSelector(({ users }) => users);
+  const dispatch = useAppDispatch();
   const [value, setValue] = useState('');
-  const [loading, setLoading] = useState(true);
-  const getUsers = async () => {
-    setLoading(true);
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/users${
-        value !== '' ? `?username=${value}` : ''
-      }`
-    );
-    if (!res.ok) {
-      throw new Error(`Response status: ${res.status}`);
-    }
-    const json = await res.json();
-    setUsers(json);
-    setLoading(false);
-  };
 
   useEffect(() => {
-    getUsers();
-  }, [value]);
+    dispatch(getUsers(value));
+  }, [dispatch, value]);
 
   return (
     <section>
@@ -32,7 +21,7 @@ export default function UsersMain() {
       <input
         type="text"
         name="name"
-        placeholder="Search by name"
+        placeholder="Search by username"
         className="mt-5 w-[100%] outline-none border border-purple-500 p-2"
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -56,7 +45,7 @@ export default function UsersMain() {
             </div>
           ))
         ) : (
-          <p className="text-red-600">Users not found...</p>
+          <p className="text-red-600">{error}</p>
         )}
       </div>
     </section>
